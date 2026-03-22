@@ -85,6 +85,7 @@ const EventSchema = new Schema<IEvent>(
     agenda: {
       type: [String],
       required: [true, 'Agenda is required'],
+      set: (items: string[] = []) => items.map((item) => item.trim()).filter(Boolean),
       validate: {
         validator: (v: string[]) => v.length > 0,
         message: 'At least one agenda item is required',
@@ -98,6 +99,7 @@ const EventSchema = new Schema<IEvent>(
     tags: {
       type: [String],
       required: [true, 'Tags are required'],
+      set: (items: string[] = []) => items.map((item) => item.trim()).filter(Boolean),
       validate: {
         validator: (v: string[]) => v.length > 0,
         message: 'At least one tag is required',
@@ -116,6 +118,9 @@ EventSchema.pre('save', function (next) {
   // Generate slug only if title changed or document is new
   if (event.isModified('title') || event.isNew) {
     event.slug = generateSlug(event.title);
+    if (!event.slug) {
+        return next(new Error('Title must contain at least on slug-safe character'))
+    }
   }
 
   // Normalize date to ISO format if it's not already
