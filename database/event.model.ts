@@ -119,7 +119,7 @@ EventSchema.pre('save', function (next) {
   if (event.isModified('title') || event.isNew) {
     event.slug = generateSlug(event.title);
     if (!event.slug) {
-        return next(new Error('Title must contain at least on slug-safe character'))
+        return next(new Error('Title must contain at least one slug-safe character'));
     }
   }
 
