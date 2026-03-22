@@ -149,11 +149,19 @@ function generateSlug(title: string): string {
 
 // Helper function to normalize date to ISO format
 function normalizeDate(dateString: string): string {
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
-    throw new Error('Invalid date format');
+  // Accept ISO format (YYYY-MM-DD) or validate explicitly
+  const isoMatch = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) {
+    const [, year, month, day] = isoMatch;
+    const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
+    if (!isNaN(date.getTime()) && 
+        date.getUTCFullYear() === parseInt(year) &&
+        date.getUTCMonth() + 1 === parseInt(month) &&
+        date.getUTCDate() === parseInt(day)) {
+      return `${year}-${month}-${day}`;
+    }
   }
-  return date.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+  throw new Error('Invalid date format. Use YYYY-MM-DD');
 }
 
 // Helper function to normalize time format
