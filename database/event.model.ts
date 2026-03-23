@@ -112,28 +112,27 @@ const EventSchema = new Schema<IEvent>(
 );
 
 // Pre-save hook for slug generation and data normalization
-EventSchema.pre('save', function (next) {
-  const event = this as IEvent;
+EventSchema.pre<IEvent>('save', async function () {
 
   // Generate slug only if title changed or document is new
-  if (event.isModified('title') || event.isNew) {
-    event.slug = generateSlug(event.title);
-    if (!event.slug) {
-        return next(new Error('Title must contain at least one slug-safe character'));
+  if (this.isModified('title') || this.isNew) {
+    this.slug = generateSlug(this.title);
+
+    if (!this.slug) {
+        throw new Error('Title must contain at least one slug-safe character');
     }
   }
 
   // Normalize date to ISO format if it's not already
-  if (event.isModified('date')) {
-    event.date = normalizeDate(event.date);
+  if (this.isModified('date')) {
+    this.date = normalizeDate(this.date);
   }
 
   // Normalize time format (HH:MM)
-  if (event.isModified('time')) {
-    event.time = normalizeTime(event.time);
+  if (this.isModified('time')) {
+    this.time = normalizeTime(this.time);
   }
 
-  next();
 });
 
 // Helper function to generate URL-friendly slug
@@ -192,7 +191,7 @@ function normalizeTime(timeString: string): string {
 }
 
 // Create unique index on slug for better performance
-EventSchema.index({ slug: 1 }, { unique: true });
+// EventSchema.index({ slug: 1 }, { unique: true });
 
 // Create compound index for common queries
 EventSchema.index({ date: 1, mode: 1 });
